@@ -1,0 +1,4 @@
+yt-dlp>=2024.1.0        # 틱톡 소재 다운로드
+requests>=2.31.0        # Typecast REST API
+python-dotenv>=1.0.0    # .env 로드
+# ffmpeg 은 시스템 설치 (brew install ffmpeg) — 이미 설치됨(8.1.2)

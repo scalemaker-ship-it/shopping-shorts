@@ -1,0 +1,11 @@
+.env
+.DS_Store
+work/*/
+!work/.gitkeep
+venv/
+__pycache__/
+*.pyc
+.mcp.json
+완성영상/
+20260814_쇼핑쇼츠영상/
+이슬목소리.m4a
