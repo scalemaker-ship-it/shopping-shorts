@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""[5] Typecast TTS — script.json 의 문장별로 유라 목소리 생성 + 타이밍 계산.
+"""[5] Typecast TTS — script.json 의 문장별로 서현(Seohyeon) 목소리 생성 + 타이밍 계산.
 
-사용: python3 pipeline/5_tts.py <slug> [--gap 0.18] [--emotion normal]
+사용: python3 pipeline/5_tts.py <slug> [--gap 0.01] [--emotion normal]
 산출:
   work/<slug>/tts/line_{n}.wav      문장별 음성
   work/<slug>/tts/narration.wav     전체 나레이션(문장 사이 gap 포함)
@@ -11,7 +11,13 @@ import sys, os, json, subprocess, urllib.request, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENDPOINT = "https://api.typecast.ai/v1/text-to-speech"
-VOICE_ID = "tc_691d49ccc47926d741f15913"  # 효은(Hyoeun) — 채널 기본 나레이션
+# 2026-08-31: 남/여 나레이션 2트랙 — script.json 의 "voice" 필드("sehee"|"piljae")로 편별 선택.
+# 여=세희("남편이~" 제3자 표현) / 남=필재("와이프가~" 제3자 표현). 미지정 시 세희.
+VOICES = {
+    "sehee":  "tc_611c3f692fac944dff493a04",   # 세희(SeHee, 여) — 이전 기본(민지→현지→효은→서현→문정→세희)
+    "piljae": "tc_68257f68bc6e3c161ab5078d",   # 필재(Piljae, 남)
+}
+VOICE_ID = VOICES["sehee"]  # 기본값 (main()에서 script.json voice 로 덮어씀)
 MODEL = "ssfm-v30"
 
 
@@ -57,27 +63,50 @@ def dur(wav):
         "-of", "default=nk=1:nw=1", wav]).decode().strip())
 
 
-def trim_silence(wav, pad=0.025, thresh="-40dB"):
+def trim_silence(wav, pad=0.005, thresh="-25dB"):  # 2026-08-31 -35dB→-25dB·pad 축소(문장 사이 무음 컷 강화)
     """앞뒤 무음 제거(양끝) — 문장 사이 늘어짐 최소화. pad만큼만 여유 남김."""
     tmp = wav + ".trim.wav"
     filt = (f"silenceremove=start_periods=1:start_silence={pad}:start_threshold={thresh}:"
             f"detection=peak,areverse,"
             f"silenceremove=start_periods=1:start_silence={pad}:start_threshold={thresh}:"
-            f"detection=peak,areverse")
+            f"detection=peak,areverse,"
+            # 문장 내부 무음 압축(2026-08-31): 0.12s 넘는 무음은 0.08s 로 줄임 — 늘어짐 제거
+            f"silenceremove=stop_periods=-1:stop_duration=0.12:stop_silence=0.08:stop_threshold=-27dB")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav,
                     "-af", filt, tmp], check=True)
+    os.replace(tmp, wav)
+
+
+def normalize_loudness(wav, target_i=-16.0):
+    """문장별 볼륨 평준화(2026-08-31) — loudnorm 측정 후 선형 게인만 적용.
+    (클립이 짧아 loudnorm 다이내믹 모드를 쓰면 문장 안에서 출렁임 → 측정+volume 게인이 안전)"""
+    import re as _re
+    out = subprocess.run(["ffmpeg", "-hide_banner", "-i", wav, "-af",
+                          "loudnorm=print_format=json", "-f", "null", "-"],
+                         capture_output=True, text=True).stderr
+    m = _re.search(r'"input_i"\s*:\s*"(-?[\d.]+)"', out)
+    if not m:
+        return
+    gain = target_i - float(m.group(1))
+    tmp = wav + ".norm.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav,
+                    "-af", f"volume={gain:.2f}dB", "-ar", "44100", tmp], check=True)
     os.replace(tmp, wav)
 
 
 def main():
     args = sys.argv[1:]
     slug = args[0]
-    gap = float(args[args.index("--gap") + 1]) if "--gap" in args else 0.03
+    gap = float(args[args.index("--gap") + 1]) if "--gap" in args else 0.01
     emotion = args[args.index("--emotion") + 1] if "--emotion" in args else "happy"
     key = load_key()
     assert key, "TYPECAST_API_KEY 없음"
     base = os.path.join(ROOT, "work", slug)
     script = json.load(open(os.path.join(base, "script.json")))
+    global VOICE_ID
+    vkey = (script.get("voice") or "sehee").lower()
+    VOICE_ID = VOICES.get(vkey, VOICES["sehee"])
+    print(f"[voice] {vkey} ({VOICE_ID})")
     ttsdir = os.path.join(base, "tts")
     os.makedirs(ttsdir, exist_ok=True)
 
@@ -97,13 +126,15 @@ def main():
         else:
             tts(line["tts"], wav, key, emotion)
         trim_silence(wav)   # 앞뒤 무음 제거
+        normalize_loudness(wav)   # 문장별 볼륨 일정하게(2026-08-31)
         d = dur(wav)
-        timing.append({"n": i, "tts": line["tts"], "sub": line["sub"],
+        timing.append({"n": i, "tts": line["tts"], "sub": line.get("sub", ""),
+                       "sub_text": line.get("sub_text"),
                        "scene": line.get("scene", ""),
                        "start": round(t, 3), "end": round(t + d, 3), "dur": round(d, 3)})
         concat_parts.append((wav, d))
         t += d + gap
-        print(f"[{i}] {d:5.2f}s  {line['sub']:10s}  {line['tts']}")
+        print(f"[{i}] {d:5.2f}s  {line.get('sub',''):10s}  {line['tts']}")
 
     # 전체 나레이션 합치기 (문장 사이 gap 무음)
     filt, inputs, idx = [], [], 0
