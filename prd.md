@@ -388,3 +388,26 @@ Homebrew ffmpeg 8.1.2에 libass/drawtext 없음 → **텍스트는 PIL로 PNG �
 
 재렌더 결과: toilet_gel 22.4s / drain_brush 21.6s / glass_cleaner 20.0s / spin_mop 22.0s / washer_cleaner 20.9s.
 ⚠️ 대본을 고치면 **5_tts → montage → text → audio** 전 단계를 다시 돌려야 한다(타이밍이 timing.json 의존).
+
+
+---
+
+## 11. 2026-08-31 개정 요약 (이 날 확정된 것 한눈에)
+
+| 항목 | 확정값 | 비고 |
+|---|---|---|
+| 대본 | **v3 온더홈 스타일 9줄** | 제3자 훅→발견 스토리→"이건 ○○인데요"→…→결과 자랑→CTA (§2[3]) |
+| 나레이션 | **남 필재 / 여 세희 편마다 교대** | `script.json` 의 `voice`. 필재="와이프가~", 세희="남편이~" |
+| 볼륨 | 문장별 **-16 LUFS 평준화** | `5_tts.py normalize_loudness` |
+| 무음 컷 | 끝단 **-45dB**, 내부 0.35s 초과만 0.2s | ⚠️ -30dB 위로 올리면 음절 잘림(필재 사고) |
+| 타이틀 | 잘난체 · **자간 0** · **궁금증 유도 2줄** | 온더홈 스타일 |
+| 자막 | y=**0.45H** · `*단어*` **형광노랑 #FFF200** · **TTS 문장과 일치 필수** | 랄리나홈 참고 |
+| 배속 | **1.3배** | 1.4는 빠르다는 피드백 |
+| BGM | vol **0.28** + 덕킹 완화(0.12/3) | 0.11+강덕킹은 안 들림 |
+| 편집 | **소스 끝 1.2s 미사용** | CapCut 아웃트로 차단 |
+| 빌드 | `pipeline/make_episode.py <spec.json>` | 원샷(TTS→편집→메타→프리뷰) |
+| 배포 | 구글드라이브 **`MMDD 카테고리`** 폴더 | 부모 `1FMLEFw8vcTudlxeylgPFv6GElB_pEG7V` |
+| 레퍼런스 추가 | 오늘의굿즈(기본 제품소스)·온더홈(타이틀·대본)·랄리나홈 | §2[1] |
+
+**산출:** 캠핑용품 10편 (fire_pit·camp_lantern·wood_splitter·camp_kettle·cast_pan·fire_starter·camp_coffee·camp_axe·titan_cup·led_lantern), 22~26초. 드라이브 `0831 캠핑용품` 업로드 완료. 유튜브 예약은 OAuth 대기.
+**다음:** 청소용품 10편(기존 20종과 중복 회피).
