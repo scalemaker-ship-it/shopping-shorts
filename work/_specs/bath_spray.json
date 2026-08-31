@@ -5,19 +5,19 @@
     "category": "청소용품/욕실",
     "shoppable": true,
     "reference": {
-      "note": "화장실 3편(2026-08-31). courtttnneyy 178만뷰 무자막 소재를 3구간 분할.",
+      "note": "화장실 3편(2026-08-31). courtttnneyy 178만뷰 무자막 소재를 서로 다른 원본 3개. / 2026-08-31 재편집: 단일 원본 구간분할 → 서로 다른 원본 3개로 교체.",
       "sources": [
         {
           "name": "1.mp4",
-          "origin": "courtttnneyy/7507728475411778858 (0-21s)"
+          "origin": "courtttnneyy/7478068652638506282"
         },
         {
           "name": "2.mp4",
-          "origin": "동 (21-42s)"
+          "origin": "cleanwithluella/7647905733471653133"
         },
         {
           "name": "3.mp4",
-          "origin": "동 (42-62s)"
+          "origin": "zestarae/7669165718000225556"
         }
       ]
     },

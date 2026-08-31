@@ -5,19 +5,19 @@
     "category": "청소용품/욕실",
     "shoppable": true,
     "reference": {
-      "note": "화장실 10편(2026-08-31). naziaxhome 무자막 구간 3분할.",
+      "note": "화장실 10편(2026-08-31). naziaxhome 무자막 구간 3분할. / 2026-08-31 재편집: 서로 다른 원본 3개로 교체.",
       "sources": [
         {
           "name": "1.mp4",
-          "origin": "naziaxhome/7144089775773912325 (1.6-4.8s)"
+          "origin": "naziaxhome/7144089775773912325 (1.6-10.6s)"
         },
         {
           "name": "2.mp4",
-          "origin": "동 (4.8-8s)"
+          "origin": "sarahsmithmaxwell/7677759082664627486 (3-23s)"
         },
         {
           "name": "3.mp4",
-          "origin": "동 (8-11s)"
+          "origin": "kleentingqueen/7200022846725295403 (4-29s)"
         }
       ]
     },

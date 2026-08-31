@@ -5,7 +5,7 @@
     "category": "청소용품/욕실",
     "shoppable": true,
     "reference": {
-      "note": "화장실 7편(2026-08-31). turnover_couple 무자막 소재 3구간 분할.",
+      "note": "화장실 7편(2026-08-31). turnover_couple 무자막 소재 3구간 분할. / 2026-08-31 재편집: 원본 다양화.",
       "sources": [
         {
           "name": "1.mp4",
@@ -13,11 +13,11 @@
         },
         {
           "name": "2.mp4",
-          "origin": "동 (25-47s)"
+          "origin": "krystleklear1/7017236864205655302"
         },
         {
           "name": "3.mp4",
-          "origin": "동 (47-69s)"
+          "origin": "mariyah_maxine/7119191069111323950 (5-35s)"
         }
       ]
     },
