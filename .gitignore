@@ -15,3 +15,5 @@ voice_samples*/
 codex-images/
 bgm/
 .secrets/
+!work/_specs/
+!work/_specs/*.json
