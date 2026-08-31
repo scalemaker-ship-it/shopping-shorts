@@ -63,15 +63,17 @@ def dur(wav):
         "-of", "default=nk=1:nw=1", wav]).decode().strip())
 
 
-def trim_silence(wav, pad=0.005, thresh="-25dB"):  # 2026-08-31 -35dB→-25dB·pad 축소(문장 사이 무음 컷 강화)
+def trim_silence(wav, pad=0.02, thresh="-45dB"):
+    # ⚠️ 2026-08-31 재조정: -25dB/0.12s 는 저음량 음절까지 잘라 나레이션이 끊겼다(cast_pan 사고).
+    # 끝단은 -45dB 로 '진짜 무음'만, 내부 압축은 0.35s 넘는 구간만 0.2s 로 줄인다.
     """앞뒤 무음 제거(양끝) — 문장 사이 늘어짐 최소화. pad만큼만 여유 남김."""
     tmp = wav + ".trim.wav"
     filt = (f"silenceremove=start_periods=1:start_silence={pad}:start_threshold={thresh}:"
             f"detection=peak,areverse,"
             f"silenceremove=start_periods=1:start_silence={pad}:start_threshold={thresh}:"
             f"detection=peak,areverse,"
-            # 문장 내부 무음 압축(2026-08-31): 0.12s 넘는 무음은 0.08s 로 줄임 — 늘어짐 제거
-            f"silenceremove=stop_periods=-1:stop_duration=0.12:stop_silence=0.08:stop_threshold=-27dB")
+            # 문장 내부 무음 압축: 0.35s 넘는 무음만 0.2s 로 — 음절 보호(2026-08-31 재조정)
+            f"silenceremove=stop_periods=-1:stop_duration=0.35:stop_silence=0.2:stop_threshold=-45dB")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav,
                     "-af", filt, tmp], check=True)
     os.replace(tmp, wav)
