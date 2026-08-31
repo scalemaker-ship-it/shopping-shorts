@@ -71,7 +71,8 @@ def build_montage(slug):
         k, nn = src_k[src], uses[src]
         m = min(sd * 0.06, 3.0)                      # 앞뒤 여백(인트로/아웃트로 텍스트 회피)
         inpt = m + (sd - dur - 2 * m) * (k / max(nn - 1, 1)) if sd > dur + 2 * m else 0.0
-        inpt = max(0.0, min(inpt, sd - dur - 0.05))
+        # 소스 끝 1.2s 는 쓰지 않는다 — CapCut 등 편집앱 아웃트로(검은 화면) 유입 방지(2026-08-31)
+        inpt = max(0.0, min(inpt, max(0.0, sd - dur - max(m, 1.2))))
         src_k[src] += 1
         inputs += ["-i", srcs[src]]
         filt.append(
