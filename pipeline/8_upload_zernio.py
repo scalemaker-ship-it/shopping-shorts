@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""[8-z] Zernio API로 란빵🐣(@eggbread0) 유튜브 예약 업로드.
+"""[8-z] Zernio API 로 유튜브 예약 업로드 (.env 의 YT_CHANNEL_ID 채널).
 
   python3 pipeline/8_upload_zernio.py accounts                        # 연결된 계정 확인
   python3 pipeline/8_upload_zernio.py connect                         # YouTube 연결 URL 발급
@@ -7,33 +7,24 @@
 
 work/<slug>/output.mp4 + upload.json 을 읽어 하루 1편씩 19:00 KST 예약(scheduledFor).
 쇼핑 태그 5개는 API가 없어 Studio에서 수동(prd §0).
+
+필요한 .env 값: ZERNIO_API_KEY, YT_CHANNEL_ID (선택: ZERNIO_PROFILE_ID)
 """
 import os, sys, json, argparse, mimetypes, datetime as dt
 import urllib.request, urllib.error
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import config
+
+ROOT = config.ROOT
 BASE = "https://zernio.com/api/v1"
-ENV = os.path.expanduser("~/.claude/skills/쇼핑쇼츠-업로드/.env")
-CHANNEL_ID = "UCxQK4IBAJ1t-dPImmMinCng"      # 란빵🐣 — 오업로드 방지 가드
 KST = dt.timezone(dt.timedelta(hours=9))
 CATEGORY_HOWTO = "26"
 LOG = os.path.join(ROOT, "work", "_upload_log_zernio.json")
 
-ORDER = ["silicone_mold", "hood_degreaser", "faucet_polish", "washer_gasket", "aircon_kit",
-         "drill_brush", "window_brush", "food_waste", "vacuum_seal", "lint_roller"]
-
 
 def env():
-    d = {}
-    if os.path.exists(ENV):
-        for ln in open(ENV, encoding="utf-8"):
-            ln = ln.strip()
-            if ln and not ln.startswith("#") and "=" in ln:
-                k, v = ln.split("=", 1); d[k.strip()] = v.strip().strip('"').strip("'")
-    key = os.environ.get("ZERNIO_API_KEY") or d.get("ZERNIO_API_KEY")
-    if not key:
-        raise SystemExit(f"ZERNIO_API_KEY 없음 → {ENV}")
-    return key, d.get("ZERNIO_PROFILE_ID")
+    return config.require("ZERNIO_API_KEY"), config.get("ZERNIO_PROFILE_ID")
 
 
 def api(method, path, key, body=None, raw=None, ctype=None):
@@ -74,22 +65,22 @@ def connect():
     if not pid:
         pid = (api("GET", "/profiles", key)["profiles"][0])["_id"]
     r = api("GET", f"/connect/youtube?profileId={pid}", key)
-    print("\n▶ 브라우저에서 열고 **란빵🐣(@eggbread0)** 채널을 선택해 '허용':\n")
+    print("\n▶ 브라우저에서 열고 **대상 채널(.env 의 YT_CHANNEL_ID)** 을 선택해 '허용':\n")
     print(r["authUrl"])
 
 
 def _yt_account(key):
-    """유튜브 계정 확보 + 란빵 채널 가드."""
+    """유튜브 계정 확보 + 대상 채널 가드."""
     yts = [x for x in _accs(key) if str(x.get("platform")).lower() == "youtube"]
     if not yts:
         raise SystemExit("연결된 유튜브 계정 없음 → `connect` 먼저 실행")
     for x in yts:
         pd = (x.get("metadata") or {}).get("profileData") or {}
         blob = json.dumps(x, ensure_ascii=False)
-        if CHANNEL_ID in blob:
+        if config.channel_id() in blob:
             print(f"✅ 대상 채널: {x.get('displayName')} ({pd.get('username','')}) accountId={x['_id']}")
             return x["_id"]
-    raise SystemExit(f"중단: 연결된 유튜브 계정 중 란빵🐣({CHANNEL_ID})이 없습니다.\n"
+    raise SystemExit(f"중단: 연결된 유튜브 계정 중 YT_CHANNEL_ID({config.channel_id()})가 없습니다.\n"
                      "     연결된 것: " + ", ".join(str(x.get("displayName")) for x in yts))
 
 
@@ -130,7 +121,7 @@ def schedule(start, hour, dry):
     day = dt.datetime.strptime(start, "%Y-%m-%d").replace(hour=hour, minute=0, second=0,
                                                           microsecond=0, tzinfo=KST)
     plan = []
-    for i, slug in enumerate(ORDER):
+    for i, slug in enumerate(config.upload_order()):
         f = os.path.join(ROOT, "work", slug, "output.mp4")
         if not os.path.exists(f): raise SystemExit(f"영상 없음: {f}")
         t, d, tg = _meta(slug)
@@ -180,7 +171,7 @@ def main():
     if a[0] == "schedule":
         ap = argparse.ArgumentParser()
         ap.add_argument("--start", default=(dt.datetime.now(KST) + dt.timedelta(days=1)).strftime("%Y-%m-%d"))
-        ap.add_argument("--hour", type=int, default=19)
+        ap.add_argument("--hour", type=int, default=config.publish_hour())
         ap.add_argument("--dry-run", action="store_true")
         p = ap.parse_args(a[1:])
         return schedule(p.start, p.hour, p.dry_run)

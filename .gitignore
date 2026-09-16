@@ -1,19 +1,39 @@
+# ─── 비밀정보 ───────────────────────────────
 .env
-.DS_Store
-work/*/
-!work/.gitkeep
-venv/
-__pycache__/
-*.pyc
-.mcp.json
-완성영상/
-20260814_쇼핑쇼츠영상/
-이슬목소리.m4a
-20260818_청소용품쇼츠/
-20260822_청소생활용품_10편/
-voice_samples*/
-codex-images/
-bgm/
 .secrets/
+*.token.json
+yt_token.json
+.mcp.json
+
+# ─── 저작물 (직접 받으세요: assets/fonts/README.md) ───
+assets/fonts/*.ttf
+assets/fonts/*.otf
+assets/bgm
+bgm/
+assets/persona/
+
+# ─── 작업물 (개인 작업 기록·용량 큼) ─────────
+work/*/
+work/_upload_log*.json
+work/_datalab/
+# 날짜별 개인 작업 폴더
+2026*/
+!work/.gitkeep
 !work/_specs/
 !work/_specs/*.json
+완성영상/
+codex-images/
+voice_samples*/
+tts_test/
+*.mp4
+*.m4a
+*.wav
+
+# ─── 파이썬 ─────────────────────────────────
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# ─── OS ────────────────────────────────────
+.DS_Store

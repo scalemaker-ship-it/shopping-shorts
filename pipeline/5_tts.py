@@ -16,24 +16,26 @@ ENDPOINT = "https://api.typecast.ai/v1/text-to-speech"
 VOICES = {
     "sehee":  "tc_611c3f692fac944dff493a04",   # 세희(SeHee, 여) — 이전 기본(민지→현지→효은→서현→문정→세희)
     "piljae": "tc_68257f68bc6e3c161ab5078d",   # 필재(Piljae, 남)
+    "leehyun": "tc_68ddea1e462b169ddd20b74d",  # 이현(Leehyun, 여) — 2026-09-07 추가. 발화 느림(세희 31.5s→이현 42.5s), "남편이~" 제3자 표현
 }
 VOICE_ID = VOICES["sehee"]  # 기본값 (main()에서 script.json voice 로 덮어씀)
 MODEL = "ssfm-v30"
 
 
 def load_key():
-    env = os.path.join(ROOT, ".env")
+    """TYPECAST_API_KEY 를 환경변수 → 레포 .env 순으로 찾는다.
+    (.env.example 은 자리표시자일 뿐이므로 절대 fallback 으로 쓰지 않는다.)"""
     key = os.environ.get("TYPECAST_API_KEY")
-    if not key and os.path.exists(env):
-        for ln in open(env):
-            if ln.startswith("TYPECAST_API_KEY="):
-                key = ln.split("=", 1)[1].strip()
     if not key:
-        # .env.example fallback (개발용)
-        ex = os.path.join(ROOT, ".env.example")
-        for ln in open(ex):
-            if ln.startswith("TYPECAST_API_KEY="):
-                key = ln.split("=", 1)[1].strip()
+        env = os.path.join(ROOT, ".env")
+        if os.path.exists(env):
+            for ln in open(env, encoding="utf-8"):
+                if ln.strip().startswith("TYPECAST_API_KEY="):
+                    key = ln.split("=", 1)[1].strip().strip('"').strip("'")
+    if not key:
+        raise SystemExit(
+            "TYPECAST_API_KEY 가 없습니다.\n"
+            "  cp .env.example .env  후 .env 에 Typecast API 키를 넣으세요.")
     return key
 
 

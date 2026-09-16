@@ -1,4 +1,21 @@
-yt-dlp>=2024.1.0        # 틱톡 소재 다운로드
-requests>=2.31.0        # Typecast REST API
-python-dotenv>=1.0.0    # .env 로드
-# ffmpeg 은 시스템 설치 (brew install ffmpeg) — 이미 설치됨(8.1.2)
+# 쇼핑쇼츠 자동화 — pip install -r requirements.txt
+#
+# ⚠️ ffmpeg / ffprobe 는 pip 로 안 깔립니다. 시스템에 별도 설치하세요:
+#     macOS   : brew install ffmpeg
+#     Ubuntu  : sudo apt install ffmpeg
+#     Windows : winget install Gyan.FFmpeg
+
+# ─── 소재 수집 ───────────────────────────────────────────────
+yt-dlp>=2024.1.0              # 틱톡 소재 다운로드
+requests>=2.31.0              # Typecast / tikwm / 데이터랩 REST 호출
+
+# ─── 편집 (타이틀·자막 렌더) ─────────────────────────────────
+Pillow>=10.0.0                # 텍스트를 PNG 레이어로 렌더 → ffmpeg 오버레이
+
+# ─── 설정 ───────────────────────────────────────────────────
+python-dotenv>=1.0.0          # .env 로드
+
+# ─── 유튜브 업로드 (8_upload.py 쓸 때만 필요) ────────────────
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.1.0
+google-auth-httplib2>=0.1.1
